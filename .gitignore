@@ -1,0 +1,17 @@
+# dbt artifacts - generated files, not source code
+target/
+dbt_packages/
+logs/
+
+# credentials - never commit these
+.env
+*.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db

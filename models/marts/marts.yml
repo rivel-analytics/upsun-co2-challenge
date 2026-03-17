@@ -1,0 +1,86 @@
+version: 2
+
+models:
+  - name: mart_co2_by_project
+    description: >
+      Aggregated CO2 emissions per project across all SKUs.
+      Includes breakdown by usage category (Compute, Storage, Data Transfer)
+      and ranking by total emissions.
+      Intended audience: ESG team, engineering leads.
+      Business question answered: "What should we do to reduce CO2 emissions?"
+    columns:
+      - name: project_id
+        description: "Project identifier"
+        tests:
+          - not_null
+          - unique
+      - name: region
+        description: "Platform.sh region"
+        tests:
+          - not_null
+      - name: total_co2_kgco2
+        description: "Total CO2 in kg for this project across all SKUs"
+        tests:
+          - not_null
+      - name: pct_of_total_co2
+        description: "Percentage of company total CO2 attributed to this project"
+        tests:
+          - not_null
+      - name: co2_rank
+        description: "Rank by total emissions — 1 is highest emitter"
+        tests:
+          - not_null
+
+  - name: mart_co2_by_region
+    description: >
+      CO2 emissions and intensity metrics aggregated by Platform.sh region.
+      The key metric is co2_per_project_kgco2 (CO2 intensity) — lower means greener.
+      Admin projects (admin.platform.sh) are excluded from this model.
+      Business question answered: "What regions are greener?"
+    columns:
+      - name: region
+        description: "Platform.sh region"
+        tests:
+          - not_null
+          - unique
+      - name: total_co2_kgco2
+        description: "Total CO2 in kg emitted by all projects in this region"
+        tests:
+          - not_null
+      - name: project_count
+        description: "Number of distinct projects in this region"
+        tests:
+          - not_null
+      - name: co2_per_project_kgco2
+        description: "CO2 intensity — kg per project. Lower = greener region"
+        tests:
+          - not_null
+      - name: greenness_rank
+        description: "Rank by CO2 intensity — 1 is the greenest region"
+        tests:
+          - not_null
+
+  - name: mart_co2_forecast
+    description: >
+      CO2 baseline and forward-looking projections for a 20% project growth scenario.
+      Assumption: CO2 scales linearly with project count using current avg CO2/project.
+      Optimistic scenario assumes 30% efficiency gain by routing new projects
+      to greener regions (based on eu-5 benchmark).
+      Business question answered: "What should be our CO2 target with +20% projects?"
+    columns:
+      - name: current_project_count
+        description: "Current number of active projects (admin excluded)"
+        tests:
+          - not_null
+      - name: current_total_co2_kgco2
+        description: "Current total CO2 baseline in kg"
+        tests:
+          - not_null
+      - name: projected_co2_kgco2
+        description: "Projected CO2 with 20% more projects — linear growth assumption"
+        tests:
+          - not_null
+      - name: optimistic_co2_target_kgco2
+        description: "Optimistic CO2 target assuming new projects go to greener regions"
+        tests:
+          - not_null

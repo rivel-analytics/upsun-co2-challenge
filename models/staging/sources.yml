@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: raw
+    database: upsun-ae-challenge
+    schema: raw
+    tables:
+      - name: raw_sku_bills
+        description: "Provider SKU bills with total CO2 emissions in kg"
+      - name: raw_project_usage
+        description: "Project-level SKU usage as percentage of total CO2 emissions"

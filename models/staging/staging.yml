@@ -1,0 +1,73 @@
+version: 2
+
+models:
+  - name: stg_sku_bills
+    description: >
+      Cleaned and standardized SKU billing data from the cloud provider.
+      Each row represents one unique SKU with its total CO2 emissions in kg.
+      Source: raw.raw_sku_bills
+    columns:
+      - name: sku_description
+        description: "SKU identifier — used as join key with project usage data"
+        tests:
+          - not_null
+          - unique:
+              config:
+                severity: warn
+                warn_if: ">0"
+                error_if: ">10"
+      - name: provider
+        description: "Cloud provider name"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['AWS', 'GCP', 'Azure']
+      - name: total_emissions_kgco2
+        description: "Total CO2 emissions in kg for this SKU"
+        tests:
+          - not_null
+      - name: usage_category
+        description: "Usage category of the SKU"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['Compute', 'Storage', 'Data Transfer', 'Other']
+      - name: is_uncategorized
+        description: "True if product_category is Uncategorized"
+        tests:
+          - not_null
+
+  - name: stg_project_usage
+    description: >
+      Cleaned project-level SKU usage data. Each row represents a project
+      consuming a fraction of a SKU total CO2. The usage_pct_of_total field
+      is a decimal proportion (e.g. 0.00587013 means 0.587013% of total CO2).
+      All rows across the entire table sum to exactly 1.0 (100%).
+      Source: raw.raw_project_usage
+    columns:
+      - name: project_id
+        description: "Project identifier (AWS instance ID)"
+        tests:
+          - not_null
+      - name: sku_description
+        description: "Reference to the SKU being consumed"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sku_bills')
+                field: sku_description
+              config:
+                severity: warn
+      - name: region
+        description: "Platform.sh region where the project runs"
+        tests:
+          - not_null
+      - name: usage_pct_of_total
+        description: "Decimal proportion of total CO2 for this project-SKU row"
+        tests:
+          - not_null
+      - name: is_admin_project
+        description: "True for internal admin.platform.sh projects"
+        tests:
+          - not_null

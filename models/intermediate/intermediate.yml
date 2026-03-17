@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: int_co2_allocated
+    description: >
+      Core allocation model. Joins SKU bills with project usage to calculate
+      the exact CO2 emissions attributable to each project for each SKU.
+      
+      Allocation formula:
+        co2_allocated_kgco2 = total_emissions_kgco2 * usage_pct_of_total
+      
+      This model is materialized as a view. In a production environment it could
+      be materialized as ephemeral (pure CTE) since it is intermediate transformation
+      logic not intended for direct consumption by stakeholders.
+    columns:
+      - name: project_id
+        description: "Project identifier"
+        tests:
+          - not_null
+      - name: region
+        description: "Platform.sh region"
+        tests:
+          - not_null
+      - name: sku_description
+        description: "SKU identifier"
+        tests:
+          - not_null
+      - name: usage_category
+        description: "Usage category: Compute, Storage, Data Transfer, Other"
+        tests:
+          - not_null
+      - name: co2_allocated_kgco2
+        description: "CO2 in kg allocated to this project for this SKU"
+        tests:
+          - not_null
