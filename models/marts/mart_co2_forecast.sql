@@ -14,14 +14,14 @@ with allocated as (
 current_baseline as (
     select
         -- current state
-        count(distinct project_id)                          as current_project_count,
-        round(sum(co2_allocated_kgco2), 4)                  as current_total_co2_kgco2,
+        count(distinct project_id)                          as current_projects,
+        round(sum(co2_allocated_kgco2), 4)                  as current_total_co2_kg,
 
         -- average co2 per project (used as growth rate unit)
         round(
             sum(co2_allocated_kgco2) / count(distinct project_id),
             4
-        )                                                   as avg_co2_per_project_kgco2
+        )                                                   as avg_co2_per_project_kg
 
     from allocated
     where is_admin_project = false
@@ -29,39 +29,42 @@ current_baseline as (
 
 forecast as (
     select
-        current_project_count,
-        current_total_co2_kgco2,
-        avg_co2_per_project_kgco2,
+        current_projects,
+        current_total_co2_kg,
+        avg_co2_per_project_kg,
 
         -- 20% growth scenario
-        round(current_project_count * 1.20)                 as projected_project_count,
-        round(current_project_count * 0.20)                 as new_projects_added,
+        round(current_projects * 1.20)                 as projected_projects_20pct_growth,
+        round(current_projects * 0.20)                 as new_projects,
 
         -- co2 target with linear growth assumption
         round(
-            current_total_co2_kgco2
-            + (current_project_count * 0.20 * avg_co2_per_project_kgco2),
+            current_total_co2_kg
+            + (current_projects * 0.20 * avg_co2_per_project_kg),
             4
-        )                                                   as projected_co2_kgco2,
+        )                                                   as projected_co2_kg,
 
         -- co2 increase in absolute terms
         round(
-            current_project_count * 0.20 * avg_co2_per_project_kgco2,
+            current_projects * 0.20 * avg_co2_per_project_kg,
             4
-        )                                                   as co2_increase_kgco2,
+        )                                                   as co2_increase_kg,
 
         -- co2 increase as percentage
-        round(20.0, 2)                                      as project_growth_pct,
+        round(20.0, 2)                                      as growth_pct,
 
         -- optimistic target: if new projects go to greenest regions
         -- assumes 30% efficiency gain by routing to greener infrastructure
         round(
-            current_total_co2_kgco2
-            + (current_project_count * 0.20 * avg_co2_per_project_kgco2 * 0.70),
+            current_total_co2_kg
+            + (current_projects * 0.20 * avg_co2_per_project_kg * 0.70),
             4
-        )                                                   as optimistic_co2_target_kgco2
+        )                                                   as optimistic_co2_target_kg
 
     from current_baseline
 )
 
-select * from forecast
+select 
+    *,
+    round(projected_co2_kg - optimistic_co2_target_kg, 1) as co2_savings_green_routing_kg 
+from forecast

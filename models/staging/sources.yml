@@ -4,8 +4,63 @@ sources:
   - name: raw
     database: upsun-ae-challenge
     schema: raw
+    description: "Raw data ingested from cloud provider billing exports"
+
+    # Freshness configuration:
+    # In production, these CSVs would be replaced by an automated billing
+    # pipeline (e.g. AWS Cost and Usage Reports → GCS → BigQuery).
+    # Freshness tests are defined here to demonstrate the pattern,
+    # but are set to warn_after a long period since the current source
+    # is a static dataset without scheduled updates.
+    config:
+      freshness:
+        warn_after: {count: 30, period: day}
+        error_after: {count: 90, period: day}
+
+    loaded_at_field: null  # static CSV - no timestamp column available
+
     tables:
       - name: raw_sku_bills
-        description: "Provider SKU bills with total CO2 emissions in kg"
+        description: "Provider SKU bills with total CO2 emissions in kg per SKU"
+        # freshness inherited from source level
+        columns:
+          - name: SKU Description
+            description: "Unique identifier for the billing SKU"
+            tests:
+              - not_null
+          - name: provider
+            description: "Cloud provider name (e.g. AWS)"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['AWS', 'GCP', 'Azure']
+          - name: Total emissions kgCO2
+            description: "Total CO2 emissions in kg for this SKU"
+            tests:
+              - not_null
+          - name: Usage category
+            description: "Usage category of the SKU"
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['Compute', 'Storage', 'Data Transfer', 'Other']
+
       - name: raw_project_usage
         description: "Project-level SKU usage as percentage of total CO2 emissions"
+        columns:
+          - name: Product
+            description: "Project identifier"
+            tests:
+              - not_null
+          - name: SKU Description
+            description: "Reference to the SKU being consumed"
+            tests:
+              - not_null
+          - name: Region
+            description: "Platform.sh region where the project runs"
+            tests:
+              - not_null
+          - name: Emissions kgCO2 % of total emissions
+            description: "Percentage of total CO2 attributed to this project-SKU combination"
+            tests:
+              - not_null

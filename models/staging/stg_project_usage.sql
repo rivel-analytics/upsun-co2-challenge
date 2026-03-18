@@ -12,15 +12,12 @@ renamed as (
         provider,
         `SKU Description`                               as sku_description,
         `Product`                                       as project_id,
-        `Region`                                        as region,
-
-        -- metrics: BigQuery already imported this as FLOAT64 (e.g. 0.587013)
-        -- we just divide by 100 to get the decimal proportion
-        `Emissions kgCO2 % of total emissions` / 100.0  as usage_pct_of_total,
+        replace(`Region`, '.platform.sh', '')           as region, -- standardize region names: remove '.platform.sh' suffix, raw value example: 'eu-5.platform.sh' → cleaned: 'eu-5'
+        `Emissions kgCO2 % of total emissions` / 100.0  as usage_pct_of_total, -- metrics: BigQuery already imported this as FLOAT64 (e.g. 0.587013), we just divide by 100 to get the decimal proportion
 
         -- derived: flag admin/internal projects
         case
-            when `Region` = 'admin.platform.sh' then true
+            when `Region` in ('admin.platform.sh', 'us.dev.vpn.internal.platform.sh') then true
             else false
         end                                             as is_admin_project
 
