@@ -1,4 +1,4 @@
-version: 2
+﻿version: 2
 
 models:
   - name: mart_co2_by_project
@@ -18,7 +18,7 @@ models:
         description: "Platform.sh region"
         tests:
           - not_null
-      - name: total_co2_kgco2
+      - name: total_co2_kg
         description: "Total CO2 in kg for this project across all SKUs"
         tests:
           - not_null
@@ -27,15 +27,15 @@ models:
         tests:
           - not_null
       - name: co2_rank
-        description: "Rank by total emissions — 1 is highest emitter"
+        description: "Rank by total emissions â€” 1 is highest emitter"
         tests:
           - not_null
 
   - name: mart_co2_by_region
     description: >
       CO2 emissions and intensity metrics aggregated by Platform.sh region.
-      The key metric is co2_per_project_kgco2 (CO2 intensity) — lower means greener.
-      Admin projects (admin.platform.sh) are excluded from this model.
+      The key metric is co2_per_project_kg (CO2 intensity) â€” lower means greener.
+      Admin projects excluded.
       Business question answered: "What regions are greener?"
     columns:
       - name: region
@@ -43,7 +43,7 @@ models:
         tests:
           - not_null
           - unique
-      - name: total_co2_kgco2
+      - name: total_co2_kg
         description: "Total CO2 in kg emitted by all projects in this region"
         tests:
           - not_null
@@ -51,12 +51,12 @@ models:
         description: "Number of distinct projects in this region"
         tests:
           - not_null
-      - name: co2_per_project_kgco2
-        description: "CO2 intensity — kg per project. Lower = greener region"
+      - name: co2_per_project_kg
+        description: "CO2 intensity â€” kg per project. Lower = greener region"
         tests:
           - not_null
       - name: greenness_rank
-        description: "Rank by CO2 intensity — 1 is the greenest region"
+        description: "Rank by CO2 intensity â€” 1 is the greenest region"
         tests:
           - not_null
 
@@ -68,19 +68,19 @@ models:
       to greener regions (based on eu-5 benchmark).
       Business question answered: "What should be our CO2 target with +20% projects?"
     columns:
-      - name: current_project_count
+      - name: current_projects
         description: "Current number of active projects (admin excluded)"
         tests:
           - not_null
-      - name: current_total_co2_kgco2
+      - name: current_total_co2_kg
         description: "Current total CO2 baseline in kg"
         tests:
           - not_null
-      - name: projected_co2_kgco2
-        description: "Projected CO2 with 20% more projects — linear growth assumption"
+      - name: projected_co2_kg
+        description: "Projected CO2 with 20% more projects â€” linear growth assumption"
         tests:
           - not_null
-      - name: optimistic_co2_target_kgco2
+      - name: optimistic_co2_target_kg
         description: "Optimistic CO2 target assuming new projects go to greener regions"
         tests:
           - not_null
