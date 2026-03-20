@@ -28,6 +28,8 @@ co2_allocated as (
         -- project identifiers
         p.project_id,
         p.region,
+        p.geographic_zone,
+        p.timezone,
         p.is_admin_project,
 
         -- sku details

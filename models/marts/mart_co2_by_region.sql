@@ -1,7 +1,10 @@
 -- mart_co2_by_region.sql
 -- Aggregates CO2 emissions and intensity per region.
 -- Answers: "What regions are greener?"
--- A greener region has lower CO2 per project (less emissions for the same usage).
+-- A greener region has lower CO2 per project (less emissions for the same workload).
+-- Region metadata (geographic_zone, timezone) comes from the dim_regions seed,
+-- populated from the Upsun regions API:
+-- https://developer.upsun.com/docs/development/regions
 
 with allocated as (
     select * from {{ ref('int_co2_allocated') }}
@@ -11,6 +14,8 @@ region_stats as (
     select
         region,
         provider,
+        geographic_zone,
+        timezone,
 
         -- total co2 for this region
         round(sum(co2_allocated_kgco2), 2)              as total_co2_kg,
@@ -38,13 +43,15 @@ region_stats as (
             then co2_allocated_kgco2 else 0 end), 2)    as co2_data_transfer_kg
 
     from allocated
-    where 
-        is_admin_project = false  -- exclude internal admin projects
-        and region != 'us.dev.vpn.internal' -- exclude internal admin projects
+    where
+        is_admin_project = false
+        and region != 'us.dev.vpn.internal'
 
     group by
         region,
-        provider
+        provider,
+        geographic_zone,
+        timezone
 ),
 
 final as (
@@ -57,7 +64,7 @@ final as (
         )                                                as pct_of_total_co2,
 
         -- rank regions by co2 intensity (1 = greenest)
-        rank() over (order by co2_per_project_kg asc) as greenness_rank,
+        rank() over (order by co2_per_project_kg asc)   as greenness_rank,
         case
             when rank() over (order by co2_per_project_kg asc) = 1 then 'Lowest Carbon'
             when rank() over (order by co2_per_project_kg asc) = 2 then 'Very Low Carbon'
@@ -65,7 +72,7 @@ final as (
             when rank() over (order by co2_per_project_kg asc) <= 6 then 'Medium Carbon'
             when rank() over (order by co2_per_project_kg asc) <= 8 then 'High Carbon'
             else 'Very High Carbon'
-        end                                             as greenness
+        end                                              as greenness
 
     from region_stats
 )

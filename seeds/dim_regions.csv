@@ -1,0 +1,18 @@
+region_id,provider,geographic_zone,timezone
+eu-5,AWS,Europe,Europe/Stockholm
+eu-3,AWS,Europe,Europe/Paris
+eu-2,AWS,Europe,Europe/Dublin
+eu-4,AWS,Europe,Europe/Dublin
+eu,AWS,Europe,Europe/Dublin
+au,AWS,Australia,Australia/Sydney
+ca-1,AWS,North America,America/Toronto
+us-2,AWS,North America,America/New_York
+us,AWS,North America,America/New_York
+au-2,Azure,Australia,Australia/Sydney
+ch-1,Google,Europe,Europe/Zurich
+de-2,Google,Europe,Europe/Berlin
+fr-3,OVH,Europe,Europe/Paris
+fr-4,Azure,Europe,Europe/Paris
+uk-1,Google,Europe,Europe/London
+us-3,Azure,North America,America/Los_Angeles
+us-4,Google,North America,America/New_York

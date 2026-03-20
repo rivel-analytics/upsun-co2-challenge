@@ -25,3 +25,13 @@ models:
     marts:
       +materialized: table
       +schema: marts
+
+seeds:
+  upsun_co2_challenge:
+    +schema: marts
+    dim_regions:
+      +column_types:
+        region_id: string
+        provider: string
+        geographic_zone: string
+        timezone: string
